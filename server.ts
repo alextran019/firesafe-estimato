@@ -150,8 +150,8 @@ function calculateEstimate(
           quantity = heatCount;
           note = `Mỗi phòng bếp/thờ: ${heatPerKitchenAltar} cái`;
         } else if (isCabinet || isBell) {
-          quantity = Math.max(1, Math.ceil(floors / 2));
-          note = `Mỗi 2 tầng lắp 1 tủ/chuông (Làm tròn lên)`;
+          quantity = Math.max(1, Math.ceil(floors / cabinetPerFloors));
+          note = `Mỗi ${cabinetPerFloors} tầng lắp 1 tủ/chuông (Làm tròn lên)`;
         } else {
           applyFallback();
         }
@@ -164,8 +164,8 @@ function calculateEstimate(
           quantity = heatCount;
           note = `Mỗi phòng bếp/thờ: ${heatPerKitchenAltar} cái`;
         } else if (isCabinet || isBell) {
-          quantity = Math.max(1, Math.ceil(floors / 2));
-          note = `Mỗi 2 tầng lắp 1 tủ/chuông (Làm tròn lên)`;
+          quantity = Math.max(1, Math.ceil(floors / cabinetPerFloors));
+          note = `Mỗi ${cabinetPerFloors} tầng lắp 1 tủ/chuông (Làm tròn lên)`;
         } else if (isPanel) {
           quantity = 1;
           note = `1 tủ điều khiển trung tâm`;
