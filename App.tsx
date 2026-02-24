@@ -16,6 +16,15 @@ import SystemSettings from './components/SystemSettings';
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
+export const getDriveImageUrl = (url: string | undefined): string => {
+  if (!url) return '';
+  const match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?id=${match[1]}`;
+  }
+  return url;
+};
+
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 const App: React.FC = () => {
@@ -128,7 +137,7 @@ const App: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg">
               {config.companyInfo?.logoUrl ? (
-                <img src={config.companyInfo.logoUrl} alt="Logo" className="w-7 h-7 object-contain" />
+                <img src={getDriveImageUrl(config.companyInfo.logoUrl)} alt="Logo" className="w-7 h-7 object-contain" />
               ) : (
                 <ShieldAlert className="text-red-600 w-7 h-7" />
               )}

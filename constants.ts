@@ -45,15 +45,6 @@ export const DEFAULT_CONFIG: FireSafetyConfig = {
       calcMethod: { type: 'per_building' }
     },
     {
-      id: 'heatLinear',
-      name: 'Dây cáp cảm biến nhiệt',
-      price: 85000,
-      description: 'Dây cáp nhiệt tuyến tính cho nhà kho, xưởng sản xuất. Tính theo mét.',
-      icon: '〰️',
-      isDefault: true,
-      calcMethod: { type: 'per_area_linear_cable' }
-    },
-    {
       id: 'bell',
       name: 'Chuông báo cháy',
       price: 320000,
@@ -71,10 +62,7 @@ export const DEFAULT_CONFIG: FireSafetyConfig = {
     },
     warehouse: {
       smokeDetectorArea: 35,
-      cabinetArea: 200,
-      heatCableRatioGeneral: 0.8,
-      heatCableRatioFlammable: 1.2,
-      heatCableRatioChemical: 1.5
+      cabinetArea: 200
     }
   }
 };
@@ -92,9 +80,6 @@ export const CALCULATION_RULES = {
     AREA_PER_SMOKE_DETECTOR_LOW_CEIL: 35,    // m² / đầu (trần ≤ 8m)
     AREA_PER_SMOKE_DETECTOR_HIGH_CEIL: 35,   // m² / đầu (trần > 8m)
     CEIL_HEIGHT_THRESHOLD: 8,                // mét
-    HEAT_CABLE_RATIO: 1.2,                   // mét cáp / m² sàn (kho hàng dễ cháy)
-    GENERAL_CABLE_RATIO: 0.8,               // mét cáp / m² sàn (kho hàng thông thường)
-    CHEM_CABLE_RATIO: 1.5,                  // mét cáp / m² sàn (hóa chất)
     FLOORS_PER_COMBINATION: 1,
     MIN_CONTROL_PANELS: 1,
   },

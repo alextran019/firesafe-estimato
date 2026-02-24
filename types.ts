@@ -16,7 +16,6 @@ export type CalcMethodType =
   | 'per_area'    // Tính theo diện tích (1 cái / X m2)
   | 'per_floor'   // Tính theo số tầng (1 cái / X tầng, hoặc X cái / 1 tầng)
   | 'per_floor_bell' // Tính chuông báo cháy (hành lang)
-  | 'per_area_linear_cable' // Tính theo mét vuông dây cáp tuyến tính
   | 'per_building'; // Cố định (vd: 1 Tủ trung tâm / công trình)
 
 export interface CalcMethod {
@@ -54,9 +53,6 @@ export interface ResidentialRules {
 export interface WarehouseRules {
   smokeDetectorArea: number; // m2/đầu khói
   cabinetArea: number;       // m2/tủ (nếu tính theo diện tích)
-  heatCableRatioGeneral: number;
-  heatCableRatioFlammable: number;
-  heatCableRatioChemical: number;
 }
 
 export interface CompanyInfo {

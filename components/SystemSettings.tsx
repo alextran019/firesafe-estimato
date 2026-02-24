@@ -9,8 +9,16 @@ interface SystemSettingsProps {
     onReset: () => void;
     onClose: () => void;
 }
-
 const formatNum = (v: number) => new Intl.NumberFormat('vi-VN').format(v);
+
+export const getDriveImageUrl = (url: string | undefined): string => {
+    if (!url) return '';
+    const match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/uc?id=${match[1]}`;
+    }
+    return url;
+};
 
 const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset, onClose }) => {
     // Ensure companyInfo is initialized
@@ -136,7 +144,7 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 mb-1">Logo URL (Đường dẫn ảnh logo)</label>
                                         <input type="text" value={draft.companyInfo?.logoUrl || ''} onChange={e => handleCompanyInfoChange('logoUrl', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none" placeholder="VD: /favicon.svg hoặc https://..." />
-                                        {draft.companyInfo?.logoUrl && <img src={draft.companyInfo.logoUrl} alt="Logo Preview" className="h-10 mt-2 object-contain" />}
+                                        {draft.companyInfo?.logoUrl && <img src={getDriveImageUrl(draft.companyInfo.logoUrl)} alt="Logo Preview" className="h-10 mt-2 object-contain" />}
                                     </div>
                                     <div className="flex gap-4">
                                         <div className="flex-1">
@@ -194,7 +202,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                                     <option value="per_floor">Theo số tầng</option>
                                                     <option value="per_area">Theo diện tích sàn</option>
                                                     <option value="per_floor_bell">Theo hành lang / tầng (Chuông)</option>
-                                                    <option value="per_area_linear_cable">Dây cáp nhiệt (Kho xưởng)</option>
                                                     <option value="per_building">Cố định 1 công trình</option>
                                                 </select>
                                             </div>
@@ -248,15 +255,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 mb-1">Bao nhiêu mét vuông cần 1 Tủ tổ hợp?</label>
                                         <input type="number" value={draft.rules.warehouse.cabinetArea} onChange={e => handleRuleChange('warehouse', 'cabinetArea', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm" />
-                                    </div>
-                                    <div className="sm:col-span-2 pt-2"><p className="text-xs font-bold text-slate-400 uppercase">Hệ số Cáp nhiệt (mét cáp / 1 mét vuông kho):</p></div>
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Kho thường</label>
-                                        <input type="number" step="0.1" value={draft.rules.warehouse.heatCableRatioGeneral} onChange={e => handleRuleChange('warehouse', 'heatCableRatioGeneral', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Kho dễ cháy</label>
-                                        <input type="number" step="0.1" value={draft.rules.warehouse.heatCableRatioFlammable} onChange={e => handleRuleChange('warehouse', 'heatCableRatioFlammable', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm" />
                                     </div>
                                 </div>
                             </div>
