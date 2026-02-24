@@ -85,36 +85,79 @@ function calculateEstimate(
 
     if (!method) continue;
 
+    // Định danh thiết bị để áp dụng quy tắc Gói
+    const nameLower = eq.name.toLowerCase();
+    const isSmoke = eq.id.includes('smoke') || nameLower.includes('khói');
+    const isHeat = (eq.id.includes('heat') && !eq.id.includes('cable')) || (nameLower.includes('nhiệt') && !nameLower.includes('cáp'));
+    const isCabinet = eq.id.includes('cabinet') || nameLower.includes('tủ tổ hợp') || nameLower.includes('chuông đèn');
+    const isPanel = eq.id.includes('panel') || nameLower.includes('tủ trung tâm') || nameLower.includes('điều khiển');
+    const isBell = eq.id.includes('bell') || nameLower.includes('chuông báo');
+
     // Quy tắc cho Nhà ở dân dụng
     if (buildingType === "residential") {
       const { cabinetPerFloors, smokePerRoom, heatPerKitchenAltar } = rules.residential || DEFAULT_CONFIG.rules.residential;
+      const heatCount = (kitchenAltar > 0) ? kitchenAltar * heatPerKitchenAltar : 0;
 
-      switch (method) {
-        case 'per_room':
-          if (rooms > 0) {
-            quantity = rooms * smokePerRoom;
-            note = `Mỗi phòng ngủ trang bị ${smokePerRoom} cái`;
-          }
-          break;
-        case 'per_kitchen_altar':
-          if (kitchenAltar > 0) {
-            quantity = kitchenAltar * heatPerKitchenAltar;
-            note = `Mỗi phòng bếp/thờ trang bị ${heatPerKitchenAltar} cái`;
-          }
-          break;
-        case 'per_floor':
-          quantity = Math.max(1, Math.ceil(floors / cabinetPerFloors));
-          note = `Mỗi ${cabinetPerFloors} tầng lắp 1 cái`;
-          break;
-        case 'per_area':
-          // Optional: fallback
-          quantity = Math.ceil(totalArea / 50);
-          note = `Mỗi 50m2 lắp 1 cái (Mặc định)`;
-          break;
-        case 'per_building':
+      const applyFallback = () => {
+        switch (method) {
+          case 'per_room': quantity = rooms > 0 ? rooms * smokePerRoom : 0; note = 'Theo số phòng'; break;
+          case 'per_kitchen_altar': quantity = heatCount; note = 'Theo bếp/thờ'; break;
+          case 'per_floor': quantity = floors; note = 'Theo số tầng (1 cái/tầng)'; break;
+          case 'per_area': quantity = Math.ceil(totalArea / 50); note = 'Theo diện tích sàn'; break;
+          case 'per_floor_bell': quantity = floors; note = 'Theo số tầng (Chuông)'; break;
+          case 'per_building': quantity = 1; note = 'Cố định 1 công trình'; break;
+          case 'per_area_linear_cable': quantity = Math.ceil(totalArea * 0.8); note = 'Hệ số cáp (Mặc định)'; break;
+        }
+      };
+
+      if (packageType === 'independent') {
+        if (isCabinet || isPanel || isBell) {
+          quantity = 0;
+          note = 'Không sử dụng trong Gói Độc Lập';
+        } else if (isSmoke) {
+          quantity = rooms > 0 ? rooms * smokePerRoom : 0;
+          note = `Mỗi phòng ngủ/khách: ${smokePerRoom} cái`;
+        } else if (isHeat) {
+          quantity = heatCount;
+          note = `Mỗi phòng bếp/thờ: ${heatPerKitchenAltar} cái`;
+        } else {
+          applyFallback();
+        }
+      }
+      else if (packageType === 'local') {
+        if (isPanel) {
+          quantity = 0;
+          note = 'Không sử dụng trong Gói Cục bộ';
+        } else if (isSmoke) {
+          const totalDetectors = Math.ceil(totalArea / 32.5);
+          quantity = Math.max(0, totalDetectors - heatCount);
+          note = `Theo diện tích (${totalArea}m² / 32.5) trừ các đầu báo nhiệt (${heatCount})`;
+        } else if (isHeat) {
+          quantity = heatCount;
+          note = `Mỗi phòng bếp/thờ: ${heatPerKitchenAltar} cái`;
+        } else if (isCabinet || isBell) {
+          quantity = Math.max(1, Math.ceil(floors / 2));
+          note = `Mỗi 2 tầng lắp 1 tủ/chuông (Làm tròn lên)`;
+        } else {
+          applyFallback();
+        }
+      }
+      else if (packageType === 'smart') {
+        if (isSmoke) {
+          quantity = rooms > 0 ? rooms * smokePerRoom : 0;
+          note = `Mỗi phòng ngủ/khách: ${smokePerRoom} cái`;
+        } else if (isHeat) {
+          quantity = heatCount;
+          note = `Mỗi phòng bếp/thờ: ${heatPerKitchenAltar} cái`;
+        } else if (isCabinet || isBell) {
+          quantity = Math.max(1, Math.ceil(floors / 2));
+          note = `Mỗi 2 tầng lắp 1 tủ/chuông (Làm tròn lên)`;
+        } else if (isPanel) {
           quantity = 1;
-          note = `1 cái / 1 công trình`;
-          break;
+          note = `1 tủ điều khiển trung tâm`;
+        } else {
+          applyFallback();
+        }
       }
     }
     // Quy tắc cho Kho Xưởng
