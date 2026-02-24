@@ -5,6 +5,8 @@ import { DEFAULT_CONFIG } from '../constants';
 
 interface SystemSettingsProps {
     config: FireSafetyConfig;
+    isAuthenticated: boolean;
+    onRequestLogin: () => void;
     onSave: (newConfig: FireSafetyConfig) => void;
     onReset: () => void;
     onClose: () => void;
@@ -20,7 +22,7 @@ export const getDriveImageUrl = (url: string | undefined): string => {
     return url;
 };
 
-const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset, onClose }) => {
+const SystemSettings: React.FC<SystemSettingsProps> = ({ config, isAuthenticated, onRequestLogin, onSave, onReset, onClose }) => {
     // Ensure companyInfo is initialized
     const [draft, setDraft] = useState<FireSafetyConfig>(() => JSON.parse(JSON.stringify(config)));
     const [activeTab, setActiveTab] = useState<'equipments' | 'rules'>('equipments');
@@ -225,10 +227,14 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                         <RotateCcw className="w-4 h-4" /> Khôi phục mặc định
                     </button>
                     <button
-                        onClick={() => { onSave(draft); onClose(); }}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-sm transition-colors"
+                        onClick={() => {
+                            if (!isAuthenticated) return onRequestLogin();
+                            onSave(draft);
+                            onClose();
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg ${isAuthenticated ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-800 hover:bg-slate-900'} text-white text-sm font-bold shadow-sm transition-colors`}
                     >
-                        <Save className="w-4 h-4" /> Lưu cấu hình
+                        <Save className="w-4 h-4" /> {isAuthenticated ? 'Lưu cấu hình' : 'Đăng nhập để Lưu'}
                     </button>
                 </div>
             </div>
