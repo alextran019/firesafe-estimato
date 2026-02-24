@@ -30,14 +30,10 @@ const AiSafetyConsultant: React.FC<AiSafetyConsultantProps> = ({ estimation, use
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-      const equipmentLines = [
-        estimation.smokeDetectors > 0 && `- ${estimation.smokeDetectors} đầu báo khói`,
-        estimation.heatDetectors > 0 && `- ${estimation.heatDetectors} đầu báo nhiệt`,
-        estimation.combinationUnits > 0 && `- ${estimation.combinationUnits} tủ tổ hợp chuông đèn`,
-        estimation.controlPanels > 0 && `- ${estimation.controlPanels} tủ trung tâm báo cháy`,
-        estimation.heatLinearDetectors > 0 && `- ${estimation.heatLinearDetectors}m dây cáp cảm biến nhiệt`,
-        estimation.alarmBells > 0 && `- ${estimation.alarmBells} chuông báo cháy`,
-      ].filter(Boolean).join('\n');
+      const equipmentLines = estimation.equipmentList
+        .filter(item => item.quantity > 0)
+        .map(item => `- ${item.quantity} ${item.name} ${item.note ? `(${item.note})` : ''}`)
+        .join('\n');
 
       // Warehouse-specific context
       const warehouseCtx = userInput.buildingType === BuildingType.WAREHOUSE

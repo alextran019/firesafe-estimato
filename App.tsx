@@ -5,11 +5,11 @@ import {
   Calculator, Info, Building2, Factory, SlidersHorizontal
 } from 'lucide-react';
 import { PackageType, BuildingType, UserInput, EstimationResult } from './types';
-import { CALCULATION_RULES, BUILDING_TYPE_INFO } from './constants';
-import { usePriceManager } from './hooks/usePriceManager';
+import { BUILDING_TYPE_INFO } from './constants';
+import { useConfigManager } from './hooks/useConfigManager';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import AiSafetyConsultant from './components/AiSafetyConsultant';
-import PriceSettings from './components/PriceSettings';
+import SystemSettings from './components/SystemSettings';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,10 @@ const formatCurrency = (val: number) =>
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 const App: React.FC = () => {
-  const { prices, updatePrices, resetPrices } = usePriceManager();
-  const [showPriceSettings, setShowPriceSettings] = useState(false);
+  const { config, updateConfig, resetConfig } = useConfigManager();
+  const [showSystemSettings, setShowSystemSettings] = useState(false);
   const [backendStatus, setBackendStatus] = useState<string>('Đang kiểm tra...');
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const [userInput, setUserInput] = useState<UserInput>({
     buildingType: BuildingType.RESIDENTIAL,
@@ -55,110 +56,48 @@ const App: React.FC = () => {
     }
   }, [userInput.buildingType]);
 
-  // ─── Calculation Logic ────────────────────────────────────────────────────
+  const [estimation, setEstimation] = useState<EstimationResult>({
+    totalCost: 0,
+    equipmentList: []
+  });
 
-  const estimation = useMemo((): EstimationResult => {
-    let smokeDetectors = 0;
-    let heatDetectors = 0;
-    let combinationUnits = 0;
-    let controlPanels = 0;
-    let heatLinearDetectors = 0;
-    let alarmBells = 0;
+  // ─── Fetch Calculation from Backend ───────────────────────────────────────
+  useEffect(() => {
+    setIsCalculating(true);
 
-    const { buildingType, floors, rooms, kitchenAltar, totalArea, storageType, ceilingHeight } = userInput;
-    const rules = CALCULATION_RULES;
+    // Tạo timeout giả mạo nhẹ để UI muợt hơn
+    const timer = setTimeout(() => {
+      fetch('/api/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...userInput,
+          config, // Push entire config directly
+          packageType
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setEstimation(data.data);
+          }
+        })
+        .catch(err => console.error("API Error: ", err))
+        .finally(() => setIsCalculating(false));
+    }, 300);
 
-    // ── RESIDENTIAL ──────────────────────────────────────────────────────────
-    if (buildingType === BuildingType.RESIDENTIAL) {
-      switch (packageType) {
-        case PackageType.INDEPENDENT:
-          smokeDetectors = rooms;
-          heatDetectors = kitchenAltar;
-          break;
-        case PackageType.LOCAL: {
-          const totalDet = Math.ceil(totalArea / rules.RESIDENTIAL.AREA_PER_SMOKE_DETECTOR);
-          heatDetectors = kitchenAltar;
-          smokeDetectors = Math.max(0, totalDet - heatDetectors);
-          combinationUnits = Math.ceil(floors / rules.RESIDENTIAL.FLOORS_PER_COMBINATION);
-          break;
-        }
-        case PackageType.SMART:
-          smokeDetectors = rooms;
-          heatDetectors = kitchenAltar;
-          combinationUnits = Math.ceil(floors / rules.RESIDENTIAL.FLOORS_PER_COMBINATION);
-          controlPanels = 1;
-          break;
-      }
-
-      // ── OFFICE ───────────────────────────────────────────────────────────────
-    } else if (buildingType === BuildingType.OFFICE) {
-      switch (packageType) {
-        case PackageType.LOCAL: {
-          smokeDetectors = Math.ceil(totalArea / rules.OFFICE.AREA_PER_SMOKE_DETECTOR);
-          combinationUnits = floors; // 1 per floor
-          alarmBells = Math.max(1, Math.ceil(totalArea / rules.OFFICE.AREA_PER_BELL));
-          break;
-        }
-        case PackageType.SMART:
-        default: {
-          smokeDetectors = Math.ceil(totalArea / rules.OFFICE.AREA_PER_SMOKE_DETECTOR);
-          combinationUnits = floors;
-          alarmBells = Math.max(1, Math.ceil(totalArea / rules.OFFICE.AREA_PER_BELL));
-          controlPanels = floors > 3 ? Math.ceil(floors / 5) : 1; // 1 panel per 5 floors
-          break;
-        }
-      }
-
-      // ── WAREHOUSE ─────────────────────────────────────────────────────────────
-    } else if (buildingType === BuildingType.WAREHOUSE) {
-      const ceiling = ceilingHeight ?? 6;
-      const areaPerDet = ceiling > rules.WAREHOUSE.CEIL_HEIGHT_THRESHOLD
-        ? rules.WAREHOUSE.AREA_PER_SMOKE_DETECTOR_HIGH_CEIL
-        : rules.WAREHOUSE.AREA_PER_SMOKE_DETECTOR_LOW_CEIL;
-
-      smokeDetectors = Math.ceil(totalArea / areaPerDet);
-
-      // Heat cable for flammable / chemical warehouses
-      if (storageType === 'flammable') {
-        heatLinearDetectors = Math.ceil(totalArea * rules.WAREHOUSE.HEAT_CABLE_RATIO);
-      } else if (storageType === 'chemical') {
-        heatLinearDetectors = Math.ceil(totalArea * rules.WAREHOUSE.CHEM_CABLE_RATIO);
-      } else {
-        heatLinearDetectors = Math.ceil(totalArea * rules.WAREHOUSE.GENERAL_CABLE_RATIO);
-      }
-
-      combinationUnits = Math.max(1, Math.ceil(floors / rules.WAREHOUSE.FLOORS_PER_COMBINATION));
-      controlPanels = 1; // always required for warehouse
-    }
-
-    const smokeCost = smokeDetectors * prices.SMOKE_DETECTOR;
-    const heatCost = heatDetectors * prices.HEAT_DETECTOR;
-    const comboCost = combinationUnits * prices.COMBINATION_UNIT;
-    const panelCost = controlPanels * prices.CONTROL_PANEL;
-    const cableCost = heatLinearDetectors * prices.HEAT_LINEAR_DETECTOR;
-    const bellCost = alarmBells * prices.ALARM_BELL;
-
-    return {
-      smokeDetectors, heatDetectors, combinationUnits, controlPanels,
-      heatLinearDetectors, alarmBells,
-      totalCost: smokeCost + heatCost + comboCost + panelCost + cableCost + bellCost,
-      breakdown: {
-        smoke: smokeCost, heat: heatCost, combination: comboCost,
-        panel: panelCost, heatLinear: cableCost, bell: bellCost,
-      },
-    };
-  }, [userInput, packageType, prices]);
+    return () => clearTimeout(timer);
+  }, [userInput, packageType, config]);
 
   // ─── Chart Data ──────────────────────────────────────────────────────────
 
-  const chartData = [
-    { name: 'Đầu báo khói', value: estimation.breakdown.smoke, color: '#ef4444' },
-    { name: 'Đầu báo nhiệt', value: estimation.breakdown.heat, color: '#f97316' },
-    { name: 'Tủ tổ hợp', value: estimation.breakdown.combination, color: '#3b82f6' },
-    { name: 'Tủ trung tâm', value: estimation.breakdown.panel, color: '#8b5cf6' },
-    { name: 'Cáp cảm biến nhiệt', value: estimation.breakdown.heatLinear, color: '#f59e0b' },
-    { name: 'Chuông báo cháy', value: estimation.breakdown.bell, color: '#10b981' },
-  ].filter(item => item.value > 0);
+  const chartData = estimation.equipmentList.map((item, idx) => ({
+    name: item.name,
+    value: item.totalPrice,
+    color: ['#ef4444', '#f97316', '#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#64748b'][idx % 7]
+  })).filter(item => item.value > 0);
+
+
 
   // ─── Building Type selector items ────────────────────────────────────────
 
@@ -203,11 +142,11 @@ const App: React.FC = () => {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setShowPriceSettings(true)}
+              onClick={() => setShowSystemSettings(true)}
               className="flex items-center gap-2 bg-red-700 hover:bg-red-800 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              <span className="hidden md:inline">Cài đặt giá</span>
+              <span className="hidden md:inline">Cài đặt Hệ thống</span>
             </button>
             <div className="hidden md:block text-right">
               <p className="text-xs uppercase opacity-75">Hỗ trợ 24/7</p>
@@ -234,8 +173,8 @@ const App: React.FC = () => {
                   key={type}
                   onClick={() => setUserInput(p => ({ ...p, buildingType: type }))}
                   className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all text-center ${userInput.buildingType === type
-                      ? 'border-red-500 bg-red-50 shadow-sm'
-                      : 'border-slate-100 hover:border-slate-300'
+                    ? 'border-red-500 bg-red-50 shadow-sm'
+                    : 'border-slate-100 hover:border-slate-300'
                     }`}
                 >
                   <Icon className={`w-6 h-6 mb-1 ${userInput.buildingType === type ? 'text-red-600' : 'text-slate-400'}`} />
@@ -336,8 +275,8 @@ const App: React.FC = () => {
                   key={p.type}
                   onClick={() => setPackageType(p.type)}
                   className={`w-full p-4 text-left rounded-xl border-2 transition-all ${packageType === p.type
-                      ? 'border-red-500 bg-red-50 shadow-md'
-                      : 'border-slate-100 hover:border-slate-300'
+                    ? 'border-red-500 bg-red-50 shadow-md'
+                    : 'border-slate-100 hover:border-slate-300'
                     }`}
                 >
                   <p className={`font-bold text-sm ${packageType === p.type ? 'text-red-700' : 'text-slate-800'}`}>{p.label}</p>
@@ -369,11 +308,11 @@ const App: React.FC = () => {
                   Ước tính tổng chi phí
                 </p>
                 <h2 className="text-4xl md:text-5xl font-black text-red-400">
-                  {formatCurrency(estimation.totalCost)}
+                  {isCalculating ? '...' : formatCurrency(estimation.totalCost)}
                 </h2>
-                {prices.updatedAt && (
+                {config.updatedAt && (
                   <p className="text-slate-500 text-xs mt-2">
-                    Giá cập nhật: {new Date(prices.updatedAt).toLocaleDateString('vi-VN')}
+                    Cấu hình cập nhật: {new Date(config.updatedAt).toLocaleDateString('vi-VN')}
                   </p>
                 )}
               </div>
@@ -395,20 +334,16 @@ const App: React.FC = () => {
                     <Calculator className="w-4 h-4 text-slate-400" />
                     Danh sách thiết bị
                   </h3>
-                  {[
-                    { label: 'Đầu báo khói', count: estimation.smokeDetectors, suffix: 'cái', icon: '💨' },
-                    { label: 'Đầu báo nhiệt', count: estimation.heatDetectors, suffix: 'cái', icon: '🔥' },
-                    { label: 'Tủ tổ hợp chuông đèn', count: estimation.combinationUnits, suffix: 'tủ', icon: '🔔' },
-                    { label: 'Tủ trung tâm báo cháy', count: estimation.controlPanels, suffix: 'tủ', icon: '🧠' },
-                    { label: 'Dây cáp cảm biến nhiệt', count: estimation.heatLinearDetectors, suffix: 'm', icon: '〰️' },
-                    { label: 'Chuông báo cháy', count: estimation.alarmBells, suffix: 'cái', icon: '🔊' },
-                  ].filter(i => i.count > 0).map((item, idx) => (
+                  {estimation.equipmentList.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{item.icon}</span>
-                        <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">{item.name}</p>
+                          {item.note && <p className="text-[10px] text-slate-400 font-normal">{item.note}</p>}
+                        </div>
                       </div>
-                      <span className="font-bold text-slate-900 text-sm">{item.count} {item.suffix}</span>
+                      <span className="font-bold text-slate-900 text-sm">{item.quantity}</span>
                     </div>
                   ))}
                 </div>
@@ -472,13 +407,13 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Price Settings Modal */}
-      {showPriceSettings && (
-        <PriceSettings
-          prices={prices}
-          onSave={updatePrices}
-          onReset={resetPrices}
-          onClose={() => setShowPriceSettings(false)}
+      {/* System Settings Modal */}
+      {showSystemSettings && (
+        <SystemSettings
+          config={config}
+          onSave={updateConfig}
+          onReset={resetConfig}
+          onClose={() => setShowSystemSettings(false)}
         />
       )}
     </div>

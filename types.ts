@@ -11,12 +11,28 @@ export enum BuildingType {
   WAREHOUSE = 'warehouse'
 }
 
+export type CalcMethodType =
+  | 'per_room'    // Tính theo số phòng (thường là phòng ngủ)
+  | 'per_kitchen_altar' // Tính theo phòng bếp/thờ
+  | 'per_area'    // Tính theo diện tích (1 cái / X m2)
+  | 'per_floor'   // Tính theo số tầng (1 cái / X tầng, hoặc X cái / 1 tầng)
+  | 'per_floor_bell' // Tính chuông báo cháy (hành lang)
+  | 'per_area_linear_cable' // Tính theo mét vuông dây cáp tuyến tính
+  | 'per_building'; // Cố định (vd: 1 Tủ trung tâm / công trình)
+
+export interface CalcMethod {
+  type: CalcMethodType;
+  value?: number; // Parameter for the calculation (e.g. area per detector, floors per cabinet). Defaults to 1 if not needed.
+}
+
 export interface Equipment {
   id: string;
   name: string;
   price: number;
   description: string;
   icon: string;
+  isDefault?: boolean; // Nếu là thiết bị gốc của ứng dụng (không thể xoá)
+  calcMethod: CalcMethod;
 }
 
 export interface UserInput {
@@ -32,32 +48,40 @@ export interface UserInput {
   ceilingHeight?: number; // chiều cao trần (m)
 }
 
-export interface EstimationResult {
-  smokeDetectors: number;
-  heatDetectors: number;
-  combinationUnits: number;
-  controlPanels: number;
-  heatLinearDetectors: number; // Dây cáp nhiệt (nhà xưởng)
-  alarmBells: number; // Chuông báo cháy (văn phòng)
-  totalCost: number;
-  breakdown: {
-    smoke: number;
-    heat: number;
-    combination: number;
-    panel: number;
-    heatLinear: number;
-    bell: number;
-  };
+export interface ResidentialRules {
+  cabinetPerFloors: number;
+  smokePerRoom: number;
+  heatPerKitchenAltar: number;
 }
 
-export interface PriceConfig {
-  SMOKE_DETECTOR: number;
-  HEAT_DETECTOR: number;
-  COMBINATION_UNIT: number;
-  CONTROL_PANEL: number;
-  HEAT_LINEAR_DETECTOR: number; // giá/mét dây cáp nhiệt
-  ALARM_BELL: number;
+export interface WarehouseRules {
+  smokeDetectorArea: number; // m2/đầu khói
+  cabinetArea: number;       // m2/tủ (nếu tính theo diện tích)
+  heatCableRatioGeneral: number;
+  heatCableRatioFlammable: number;
+  heatCableRatioChemical: number;
+}
+
+export interface FireSafetyConfig {
+  equipments: Equipment[];
+  rules: {
+    residential: ResidentialRules;
+    warehouse: WarehouseRules;
+  };
   updatedAt?: string;
+}
+
+export interface EstimationResult {
+  totalCost: number;
+  equipmentList: {
+    id: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    note: string;
+    icon: string;
+  }[];
 }
 
 export interface SavedProject {

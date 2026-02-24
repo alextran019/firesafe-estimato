@@ -1,63 +1,77 @@
+import { FireSafetyConfig, BuildingType } from './types.js';
 
-import { Equipment, PriceConfig, BuildingType } from './types';
-
-export const DEFAULT_PRICES: PriceConfig = {
-  SMOKE_DETECTOR: 650000,
-  HEAT_DETECTOR: 650000,
-  COMBINATION_UNIT: 1890000,
-  CONTROL_PANEL: 4650000,
-  HEAT_LINEAR_DETECTOR: 85000, // VND/mét
-  ALARM_BELL: 320000,
-};
-
-export const EQUIPMENT_PRICES = DEFAULT_PRICES; // backward compat
-
-export const EQUIPMENTS: Equipment[] = [
-  {
-    id: 'smoke',
-    name: 'Đầu báo khói',
-    price: DEFAULT_PRICES.SMOKE_DETECTOR,
-    description: 'Phát hiện khói sớm trong các phòng ngủ, phòng khách.',
-    icon: '💨'
-  },
-  {
-    id: 'heat',
-    name: 'Đầu báo nhiệt',
-    price: DEFAULT_PRICES.HEAT_DETECTOR,
-    description: 'Chuyên dụng cho nhà bếp hoặc phòng thờ để tránh báo giả.',
-    icon: '🔥'
-  },
-  {
-    id: 'combination',
-    name: 'Tủ tổ hợp chuông đèn',
-    price: DEFAULT_PRICES.COMBINATION_UNIT,
-    description: 'Phát tín hiệu cảnh báo âm thanh và ánh sáng toàn tầng.',
-    icon: '🔔'
-  },
-  {
-    id: 'panel',
-    name: 'Tủ trung tâm báo cháy',
-    price: DEFAULT_PRICES.CONTROL_PANEL,
-    description: 'Bộ não điều khiển toàn bộ hệ thống báo cháy công trình.',
-    icon: '🧠'
-  },
-  {
-    id: 'heatLinear',
-    name: 'Dây cáp cảm biến nhiệt',
-    price: DEFAULT_PRICES.HEAT_LINEAR_DETECTOR,
-    description: 'Dây cáp nhiệt tuyến tính cho nhà kho, xưởng sản xuất. Tính theo mét.',
-    icon: '〰️'
-  },
-  {
-    id: 'bell',
-    name: 'Chuông báo cháy',
-    price: DEFAULT_PRICES.ALARM_BELL,
-    description: 'Chuông âm thanh lớn dùng cho văn phòng, hành lang.',
-    icon: '🔊'
+export const DEFAULT_CONFIG: FireSafetyConfig = {
+  equipments: [
+    {
+      id: 'smoke',
+      name: 'Đầu báo khói',
+      price: 650000,
+      description: 'Phát hiện khói sớm trong các phòng.',
+      icon: '💨',
+      isDefault: true,
+      calcMethod: { type: 'per_room' }
+    },
+    {
+      id: 'heat',
+      name: 'Đầu báo nhiệt',
+      price: 650000,
+      description: 'Chuyên dụng cho nhà bếp hoặc phòng thờ để tránh báo giả.',
+      icon: '🔥',
+      isDefault: true,
+      calcMethod: { type: 'per_kitchen_altar' }
+    },
+    {
+      id: 'combination',
+      name: 'Tủ tổ hợp chuông đèn',
+      price: 1890000,
+      description: 'Phát tín hiệu cảnh báo âm thanh và ánh sáng toàn tầng.',
+      icon: '🔔',
+      isDefault: true,
+      calcMethod: { type: 'per_floor' }
+    },
+    {
+      id: 'panel',
+      name: 'Tủ trung tâm báo cháy',
+      price: 4650000,
+      description: 'Bộ não điều khiển toàn bộ hệ thống báo cháy công trình.',
+      icon: '🧠',
+      isDefault: true,
+      calcMethod: { type: 'per_building' }
+    },
+    {
+      id: 'heatLinear',
+      name: 'Dây cáp cảm biến nhiệt',
+      price: 85000,
+      description: 'Dây cáp nhiệt tuyến tính cho nhà kho, xưởng sản xuất. Tính theo mét.',
+      icon: '〰️',
+      isDefault: true,
+      calcMethod: { type: 'per_area_linear_cable' }
+    },
+    {
+      id: 'bell',
+      name: 'Chuông báo cháy',
+      price: 320000,
+      description: 'Chuông âm thanh lớn dùng cho hành lang.',
+      icon: '🔊',
+      isDefault: true,
+      calcMethod: { type: 'per_floor_bell' }
+    }
+  ],
+  rules: {
+    residential: {
+      cabinetPerFloors: 2,
+      smokePerRoom: 1,
+      heatPerKitchenAltar: 1
+    },
+    warehouse: {
+      smokeDetectorArea: 60,
+      cabinetArea: 150,
+      heatCableRatioGeneral: 0.8,
+      heatCableRatioFlammable: 1.2,
+      heatCableRatioChemical: 1.5
+    }
   }
-];
-
-// -----------------------------------------------------------------------
+};
 // Quy tắc tính theo TCVN 5738 & tiêu chuẩn thực tiễn
 // -----------------------------------------------------------------------
 
