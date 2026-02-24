@@ -1,0 +1,136 @@
+
+import { Equipment, PriceConfig, BuildingType } from './types';
+
+export const DEFAULT_PRICES: PriceConfig = {
+  SMOKE_DETECTOR: 650000,
+  HEAT_DETECTOR: 650000,
+  COMBINATION_UNIT: 1890000,
+  CONTROL_PANEL: 4650000,
+  HEAT_LINEAR_DETECTOR: 85000, // VND/mét
+  ALARM_BELL: 320000,
+};
+
+export const EQUIPMENT_PRICES = DEFAULT_PRICES; // backward compat
+
+export const EQUIPMENTS: Equipment[] = [
+  {
+    id: 'smoke',
+    name: 'Đầu báo khói',
+    price: DEFAULT_PRICES.SMOKE_DETECTOR,
+    description: 'Phát hiện khói sớm trong các phòng ngủ, phòng khách.',
+    icon: '💨'
+  },
+  {
+    id: 'heat',
+    name: 'Đầu báo nhiệt',
+    price: DEFAULT_PRICES.HEAT_DETECTOR,
+    description: 'Chuyên dụng cho nhà bếp hoặc phòng thờ để tránh báo giả.',
+    icon: '🔥'
+  },
+  {
+    id: 'combination',
+    name: 'Tủ tổ hợp chuông đèn',
+    price: DEFAULT_PRICES.COMBINATION_UNIT,
+    description: 'Phát tín hiệu cảnh báo âm thanh và ánh sáng toàn tầng.',
+    icon: '🔔'
+  },
+  {
+    id: 'panel',
+    name: 'Tủ trung tâm báo cháy',
+    price: DEFAULT_PRICES.CONTROL_PANEL,
+    description: 'Bộ não điều khiển toàn bộ hệ thống báo cháy công trình.',
+    icon: '🧠'
+  },
+  {
+    id: 'heatLinear',
+    name: 'Dây cáp cảm biến nhiệt',
+    price: DEFAULT_PRICES.HEAT_LINEAR_DETECTOR,
+    description: 'Dây cáp nhiệt tuyến tính cho nhà kho, xưởng sản xuất. Tính theo mét.',
+    icon: '〰️'
+  },
+  {
+    id: 'bell',
+    name: 'Chuông báo cháy',
+    price: DEFAULT_PRICES.ALARM_BELL,
+    description: 'Chuông âm thanh lớn dùng cho văn phòng, hành lang.',
+    icon: '🔊'
+  }
+];
+
+// -----------------------------------------------------------------------
+// Quy tắc tính theo TCVN 5738 & tiêu chuẩn thực tiễn
+// -----------------------------------------------------------------------
+
+export const CALCULATION_RULES = {
+  // Nhà ở dân dụng
+  RESIDENTIAL: {
+    AREA_PER_SMOKE_DETECTOR: 32.5,  // m² / đầu (trần ≤ 6m)
+    FLOORS_PER_COMBINATION: 2,
+  },
+  // Văn phòng
+  OFFICE: {
+    AREA_PER_SMOKE_DETECTOR: 30,    // m² / đầu (không gian mở)
+    AREA_PER_BELL: 400,             // m² / chuông (trong hành lang)
+    FLOORS_PER_COMBINATION: 1,      // mỗi tầng 1 tủ tổ hợp
+    MIN_DETECTORS_PER_ROOM: 1,
+  },
+  // Nhà xưởng / kho
+  WAREHOUSE: {
+    AREA_PER_SMOKE_DETECTOR_LOW_CEIL: 60,    // m² / đầu (trần ≤ 8m)
+    AREA_PER_SMOKE_DETECTOR_HIGH_CEIL: 40,   // m² / đầu (trần > 8m)
+    CEIL_HEIGHT_THRESHOLD: 8,                // mét
+    HEAT_CABLE_RATIO: 1.2,                   // mét cáp / m² sàn (kho hàng dễ cháy)
+    GENERAL_CABLE_RATIO: 0.8,               // mét cáp / m² sàn (kho hàng thông thường)
+    CHEM_CABLE_RATIO: 1.5,                  // mét cáp / m² sàn (hóa chất)
+    FLOORS_PER_COMBINATION: 1,
+    MIN_CONTROL_PANELS: 1,
+  },
+};
+
+// -----------------------------------------------------------------------
+// Thông tin mô tả các loại công trình
+// -----------------------------------------------------------------------
+
+export const BUILDING_TYPE_INFO: Record<BuildingType, {
+  label: string;
+  icon: string;
+  description: string;
+  technicalNotes: string[];
+  applicablePackages: string[];
+}> = {
+  [BuildingType.RESIDENTIAL]: {
+    label: 'Nhà ở dân dụng',
+    icon: '🏠',
+    description: 'Nhà phố, nhà biệt thự, căn hộ chung cư.',
+    technicalNotes: [
+      'Tiêu chuẩn lắp đặt: 1 đầu báo khói / phòng hoặc tối đa 35m² / đầu.',
+      'Bếp và phòng thờ dùng đầu báo nhiệt để tránh báo động giả.',
+      'Hệ thống thông minh có thể kết nối báo về điện thoại.',
+    ],
+    applicablePackages: ['independent', 'local', 'smart'],
+  },
+  [BuildingType.OFFICE]: {
+    label: 'Văn phòng / Tòa nhà',
+    icon: '🏢',
+    description: 'Văn phòng, tòa nhà thương mại, trung tâm hành chính.',
+    technicalNotes: [
+      'Tiêu chuẩn: 1 đầu báo khói mỗi 30m² mặt sàn (TCVN 5738).',
+      'Cần lắp chuông báo cháy ở mỗi tầng / hành lang chính.',
+      'Mỗi tầng cần 1 tủ tổ hợp chuông đèn báo cháy riêng biệt.',
+      'Bắt buộc có tủ trung tâm điều khiển toàn tòa nhà.',
+    ],
+    applicablePackages: ['local', 'smart'],
+  },
+  [BuildingType.WAREHOUSE]: {
+    label: 'Nhà xưởng / Kho hàng',
+    icon: '🏭',
+    description: 'Xưởng sản xuất, kho hàng hóa, nhà máy.',
+    technicalNotes: [
+      'Trần ≤ 8m: 1 đầu báo khói / 60m². Trần > 8m: 1 đầu / 40m².',
+      'Kho hàng dễ cháy / hóa chất bắt buộc dùng dây cáp cảm biến nhiệt tuyến tính.',
+      'Cần phân vùng cháy rõ ràng, mỗi vùng có detector riêng.',
+      'Bắt buộc có tủ trung tâm và bộ lưu điện (UPS) dự phòng.',
+    ],
+    applicablePackages: ['local', 'smart'],
+  },
+};
