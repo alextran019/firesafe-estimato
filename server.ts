@@ -186,11 +186,14 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     // Serve static files in production
-    app.use(express.static(path.join(__dirname, "dist")));
+    // Vì file server được build ra thư mục 'dist-server', thư mục 'dist' của React nằm ở cấp độ cha
+    const distPath = path.join(__dirname, "../dist");
+
+    app.use(express.static(distPath));
 
     // Fallback cho Single Page Application (SPA) - Cách này tương thích với Express v5
     app.use((req, res) => {
-      res.sendFile(path.join(__dirname, "dist", "index.html"));
+      res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
