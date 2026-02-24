@@ -55,15 +55,7 @@ export interface WarehouseRules {
   cabinetArea: number;       // m2/tủ (nếu tính theo diện tích)
 }
 
-export interface CompanyInfo {
-  name: string;
-  logoUrl: string;
-  phone: string;
-  address: string;
-}
-
 export interface FireSafetyConfig {
-  companyInfo?: CompanyInfo;
   equipments: Equipment[];
   rules: {
     residential: ResidentialRules;

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   ShieldAlert, Home, Layout, Settings, PieChart as PieChartIcon,
@@ -32,6 +31,8 @@ const App: React.FC = () => {
   const [showSystemSettings, setShowSystemSettings] = useState(false);
   const [backendStatus, setBackendStatus] = useState<string>('Đang kiểm tra...');
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authForm, setAuthForm] = useState({ email: '', password: '' });
 
   const [userInput, setUserInput] = useState<UserInput>({
     buildingType: BuildingType.RESIDENTIAL,
@@ -127,7 +128,41 @@ const App: React.FC = () => {
 
   const bInfo = BUILDING_TYPE_INFO[userInput.buildingType];
 
-  // ─── Render ──────────────────────────────────────────────────────────────
+  // ─── Render Authentication ──────────────────────────────────────────────────
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 max-w-sm w-full">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="bg-red-50 p-3 rounded-xl"><ShieldAlert className="text-red-600 w-8 h-8" /></div>
+            <div>
+              <h1 className="text-2xl font-black text-slate-800">FIREAI</h1>
+              <p className="text-xs text-slate-500 font-medium tracking-wide">Fire Safety Assistant</p>
+            </div>
+          </div>
+          <form onSubmit={e => {
+            e.preventDefault();
+            if (authForm.email && authForm.password) setIsAuthenticated(true);
+          }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+              <input type="email" required value={authForm.email} onChange={e => setAuthForm(p => ({ ...p, email: e.target.value }))} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all" placeholder="user@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu</label>
+              <input type="password" required value={authForm.password} onChange={e => setAuthForm(p => ({ ...p, password: e.target.value }))} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all" placeholder="••••••••" />
+            </div>
+            <button type="submit" className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors mt-2">
+              Đăng nhập / Đăng ký
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Render Main App ────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -136,18 +171,14 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg">
-              {config.companyInfo?.logoUrl ? (
-                <img src={getDriveImageUrl(config.companyInfo.logoUrl)} alt="Logo" className="w-7 h-7 object-contain" />
-              ) : (
-                <ShieldAlert className="text-red-600 w-7 h-7" />
-              )}
+              <ShieldAlert className="text-red-600 w-7 h-7" />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold tracking-tight">
-                {config.companyInfo?.name || 'FireSafe Pro'}
+                FIREAI
               </h1>
               <p className="text-red-100 text-xs">
-                Chuyên gia ước tính PCCC &nbsp;·&nbsp;
+                Fire Safety Assistant &nbsp;·&nbsp;
                 <span className="italic opacity-80">{backendStatus}</span>
               </p>
             </div>
@@ -162,7 +193,7 @@ const App: React.FC = () => {
             </button>
             <div className="hidden md:block text-right">
               <p className="text-xs uppercase opacity-75">Hỗ trợ 24/7</p>
-              <p className="font-semibold">{config.companyInfo?.phone || '1900 xxxx'}</p>
+              <p className="font-semibold">0385.908.114</p>
             </div>
           </div>
         </div>
