@@ -70,8 +70,8 @@ export const DEFAULT_CONFIG: FireSafetyConfig = {
       heatPerKitchenAltar: 1
     },
     warehouse: {
-      smokeDetectorArea: 60,
-      cabinetArea: 150,
+      smokeDetectorArea: 35,
+      cabinetArea: 200,
       heatCableRatioGeneral: 0.8,
       heatCableRatioFlammable: 1.2,
       heatCableRatioChemical: 1.5
@@ -87,17 +87,10 @@ export const CALCULATION_RULES = {
     AREA_PER_SMOKE_DETECTOR: 32.5,  // m² / đầu (trần ≤ 6m)
     FLOORS_PER_COMBINATION: 2,
   },
-  // Văn phòng
-  OFFICE: {
-    AREA_PER_SMOKE_DETECTOR: 30,    // m² / đầu (không gian mở)
-    AREA_PER_BELL: 400,             // m² / chuông (trong hành lang)
-    FLOORS_PER_COMBINATION: 1,      // mỗi tầng 1 tủ tổ hợp
-    MIN_DETECTORS_PER_ROOM: 1,
-  },
   // Nhà xưởng / kho
   WAREHOUSE: {
-    AREA_PER_SMOKE_DETECTOR_LOW_CEIL: 60,    // m² / đầu (trần ≤ 8m)
-    AREA_PER_SMOKE_DETECTOR_HIGH_CEIL: 40,   // m² / đầu (trần > 8m)
+    AREA_PER_SMOKE_DETECTOR_LOW_CEIL: 35,    // m² / đầu (trần ≤ 8m)
+    AREA_PER_SMOKE_DETECTOR_HIGH_CEIL: 35,   // m² / đầu (trần > 8m)
     CEIL_HEIGHT_THRESHOLD: 8,                // mét
     HEAT_CABLE_RATIO: 1.2,                   // mét cáp / m² sàn (kho hàng dễ cháy)
     GENERAL_CABLE_RATIO: 0.8,               // mét cáp / m² sàn (kho hàng thông thường)
@@ -129,28 +122,17 @@ export const BUILDING_TYPE_INFO: Record<BuildingType, {
     ],
     applicablePackages: ['independent', 'local', 'smart'],
   },
-  [BuildingType.OFFICE]: {
-    label: 'Văn phòng / Tòa nhà',
-    icon: '🏢',
-    description: 'Văn phòng, tòa nhà thương mại, trung tâm hành chính.',
-    technicalNotes: [
-      'Tiêu chuẩn: 1 đầu báo khói mỗi 30m² mặt sàn (TCVN 5738).',
-      'Cần lắp chuông báo cháy ở mỗi tầng / hành lang chính.',
-      'Mỗi tầng cần 1 tủ tổ hợp chuông đèn báo cháy riêng biệt.',
-      'Bắt buộc có tủ trung tâm điều khiển toàn tòa nhà.',
-    ],
-    applicablePackages: ['local', 'smart'],
-  },
   [BuildingType.WAREHOUSE]: {
     label: 'Nhà xưởng / Kho hàng',
     icon: '🏭',
     description: 'Xưởng sản xuất, kho hàng hóa, nhà máy.',
     technicalNotes: [
-      'Trần ≤ 8m: 1 đầu báo khói / 60m². Trần > 8m: 1 đầu / 40m².',
+      'Tổng số đầu báo tự động tính theo diện tích: 35m² / 1 đầu.',
+      'Tổng số tủ tổ hợp chuông đèn tính theo diện tích: 200m² / 1 tủ.',
       'Kho hàng dễ cháy / hóa chất bắt buộc dùng dây cáp cảm biến nhiệt tuyến tính.',
       'Cần phân vùng cháy rõ ràng, mỗi vùng có detector riêng.',
       'Bắt buộc có tủ trung tâm và bộ lưu điện (UPS) dự phòng.',
     ],
-    applicablePackages: ['local', 'smart'],
+    applicablePackages: ['smart'],
   },
 };

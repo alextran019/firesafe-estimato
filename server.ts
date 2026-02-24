@@ -164,49 +164,36 @@ function calculateEstimate(
     else if (buildingType === "warehouse") {
       const { smokeDetectorArea, cabinetArea, heatCableRatioGeneral, heatCableRatioFlammable, heatCableRatioChemical } = rules.warehouse || DEFAULT_CONFIG.rules.warehouse;
 
-      switch (method) {
-        case 'per_area':
-        case 'per_room': // map room to area for warehouse
+      const applyFallback = () => {
+        switch (method) {
+          case 'per_room':
+          case 'per_area': quantity = Math.max(1, Math.ceil(totalArea / smokeDetectorArea)); note = `Cứ ${smokeDetectorArea}m2 sàn trang bị 1 báo khói`; break;
+          case 'per_floor': quantity = Math.max(1, Math.ceil(totalArea / cabinetArea)); note = `Cứ ${cabinetArea}m2 kho trang bị 1 tủ/chuông`; break;
+          case 'per_area_linear_cable':
+            let ratio = heatCableRatioGeneral;
+            if (storageType === 'flammable') ratio = heatCableRatioFlammable;
+            if (storageType === 'chemical') ratio = heatCableRatioChemical;
+            quantity = Math.ceil(totalArea * ratio);
+            note = `Hệ số cáp dựa theo diện tích sàn và tính chất kho: ${ratio}`;
+            break;
+          case 'per_building': quantity = 1; note = `1 cái / 1 công trình kho`; break;
+        }
+      };
+
+      // Nhà xưởng chỉ áp dụng Gói Thông Minh
+      if (packageType === 'smart' || true) {
+        if (isSmoke) {
           quantity = Math.max(1, Math.ceil(totalArea / smokeDetectorArea));
-          note = `Cứ ${smokeDetectorArea}m2 sàn trang bị 1 cái`;
-          break;
-        case 'per_floor':
+          note = `Tính theo diện tích (${totalArea}m² / ${smokeDetectorArea}m²)`;
+        } else if (isCabinet || isBell) {
           quantity = Math.max(1, Math.ceil(totalArea / cabinetArea));
-          note = `Cứ ${cabinetArea}m2 kho trang bị 1 bộ`;
-          break;
-        case 'per_area_linear_cable':
-          let ratio = heatCableRatioGeneral;
-          if (storageType === 'flammable') ratio = heatCableRatioFlammable;
-          if (storageType === 'chemical') ratio = heatCableRatioChemical;
-          quantity = Math.ceil(totalArea * ratio);
-          note = `Hệ số cáp dựa theo diện tích sàn và tính chất kho: ${ratio}`;
-          break;
-        case 'per_building':
+          note = `Tính theo diện tích (${totalArea}m² / ${cabinetArea}m²)`;
+        } else if (isPanel) {
           quantity = 1;
-          note = `1 cái / 1 công trình kho`;
-          break;
-      }
-    }
-    // Quy tắc cho Văn Phòng
-    else if (buildingType === "office") {
-      switch (method) {
-        case 'per_room':
-        case 'per_area':
-          quantity = Math.ceil(totalArea / 40); // 40m2/1 báo khói văn phòng
-          note = `Văn phòng: Cứ 40m2 sàn trang bị 1 cái`;
-          break;
-        case 'per_floor':
-          quantity = floors;
-          note = `Mỗi tầng 1 tủ tổ hợp`;
-          break;
-        case 'per_floor_bell':
-          quantity = floors;
-          note = `Hành lang mỗi tầng 1 chuông`;
-          break;
-        case 'per_building':
-          quantity = Math.max(1, Math.ceil(floors / 5)); // 5 tầng 1 tủ trung tâm phụ
-          note = `Trung tâm điều khiển (1 tủ / 5 tầng)`;
-          break;
+          note = `1 tủ điều khiển trung tâm`;
+        } else {
+          applyFallback();
+        }
       }
     }
 

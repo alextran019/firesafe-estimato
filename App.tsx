@@ -48,11 +48,9 @@ const App: React.FC = () => {
   useEffect(() => {
     if (userInput.buildingType === BuildingType.RESIDENTIAL) {
       // keep whatever was chosen
-    } else {
-      // office & warehouse require at least LOCAL
-      if (packageType === PackageType.INDEPENDENT) {
-        setPackageType(PackageType.LOCAL);
-      }
+    } else if (userInput.buildingType === BuildingType.WAREHOUSE) {
+      // warehouse only supports SMART
+      setPackageType(PackageType.SMART);
     }
   }, [userInput.buildingType]);
 
@@ -103,7 +101,6 @@ const App: React.FC = () => {
 
   const buildingTypes = [
     { type: BuildingType.RESIDENTIAL, icon: Home, label: 'Nhà ở', desc: 'Nhà phố, biệt thự, căn hộ' },
-    { type: BuildingType.OFFICE, icon: Building2, label: 'Văn phòng', desc: 'Tòa nhà, thương mại' },
     { type: BuildingType.WAREHOUSE, icon: Factory, label: 'Nhà xưởng', desc: 'Kho hàng, xưởng SX' },
   ];
 
@@ -228,22 +225,6 @@ const App: React.FC = () => {
                 onChange={v => setUserInput(p => ({ ...p, totalArea: v }))}
               />
 
-              {/* Office-specific */}
-              {userInput.buildingType === BuildingType.OFFICE && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật độ nhân viên</label>
-                  <select
-                    value={userInput.officeDensity}
-                    onChange={e => setUserInput(p => ({ ...p, officeDensity: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  >
-                    <option value="low">Thưa (&lt; 5 người/100m²)</option>
-                    <option value="medium">Trung bình (5–15 người/100m²)</option>
-                    <option value="high">Dày đặc (&gt; 15 người/100m²)</option>
-                  </select>
-                </div>
-              )}
-
               {/* Warehouse-specific */}
               {userInput.buildingType === BuildingType.WAREHOUSE && (
                 <>
@@ -325,9 +306,7 @@ const App: React.FC = () => {
               <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 text-center min-w-[160px]">
                 <p className="text-xs text-slate-400 mb-1">Thời gian thi công</p>
                 <p className="text-lg font-bold">
-                  {userInput.buildingType === BuildingType.WAREHOUSE ? '3 – 5 Ngày'
-                    : userInput.buildingType === BuildingType.OFFICE ? '2 – 4 Ngày'
-                      : '1 – 2 Ngày'}
+                  {userInput.buildingType === BuildingType.WAREHOUSE ? '3 – 5 Ngày' : '1 – 2 Ngày'}
                 </p>
               </div>
             </div>
@@ -431,10 +410,10 @@ const App: React.FC = () => {
 interface InputFieldProps {
   label: string;
   unit: string;
-  value: number;
+  value: number | '';
   min?: number;
   step?: number;
-  onChange: (v: number) => void;
+  onChange: (v: number | '') => void;
 }
 
 const InputField: React.FC<InputFieldProps> = ({ label, unit, value, min = 0, step = 1, onChange }) => (
@@ -447,7 +426,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, unit, value, min = 0, st
         step={step}
         className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all pr-14"
         value={value}
-        onChange={e => onChange(parseFloat(e.target.value) || min)}
+        onChange={e => onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}
       />
       <span className="absolute right-4 top-2 text-slate-400 text-sm">{unit}</span>
     </div>

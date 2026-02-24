@@ -7,7 +7,6 @@ export enum PackageType {
 
 export enum BuildingType {
   RESIDENTIAL = 'residential',
-  OFFICE = 'office',
   WAREHOUSE = 'warehouse'
 }
 
@@ -41,8 +40,6 @@ export interface UserInput {
   rooms: number;
   kitchenAltar: number;
   totalArea: number;
-  // Office-specific
-  officeDensity?: 'low' | 'medium' | 'high'; // người/m²
   // Warehouse-specific
   storageType?: 'general' | 'flammable' | 'chemical'; // loại hàng hóa
   ceilingHeight?: number; // chiều cao trần (m)
