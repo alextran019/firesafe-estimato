@@ -1,6 +1,12 @@
 import { FireSafetyConfig, BuildingType } from './types.js';
 
 export const DEFAULT_CONFIG: FireSafetyConfig = {
+  companyInfo: {
+    name: 'FireSafe AI',
+    logoUrl: '/favicon.svg',
+    phone: '09XX XXX XXX',
+    address: 'Hà Nội, Việt Nam'
+  },
   equipments: [
     {
       id: 'smoke',

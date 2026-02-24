@@ -13,8 +13,12 @@ interface SystemSettingsProps {
 const formatNum = (v: number) => new Intl.NumberFormat('vi-VN').format(v);
 
 const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset, onClose }) => {
-    const [draft, setDraft] = useState<FireSafetyConfig>(JSON.parse(JSON.stringify(config)));
-    const [activeTab, setActiveTab] = useState<'equipments' | 'rules'>('equipments');
+    // Ensure companyInfo is initialized
+    const [draft, setDraft] = useState<FireSafetyConfig>({
+        ...JSON.parse(JSON.stringify(config)),
+        companyInfo: config.companyInfo || JSON.parse(JSON.stringify(DEFAULT_CONFIG.companyInfo))
+    });
+    const [activeTab, setActiveTab] = useState<'company' | 'equipments' | 'rules'>('equipments');
 
     const handleEquipPriceChange = (id: string, raw: string) => {
         const val = parseInt(raw.replace(/\D/g, ''), 10) || 0;
@@ -72,6 +76,16 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
         }));
     };
 
+    const handleCompanyInfoChange = (field: keyof NonNullable<FireSafetyConfig['companyInfo']>, value: string) => {
+        setDraft(prev => ({
+            ...prev,
+            companyInfo: {
+                ...(prev.companyInfo || DEFAULT_CONFIG.companyInfo!),
+                [field]: value
+            }
+        }));
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -87,24 +101,57 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
+                <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto whitespace-nowrap scrollbar-hide">
                     <button
-                        className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'equipments' ? 'border-red-600 text-red-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        onClick={() => setActiveTab('equipments')}
+                        className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'company' ? 'border-red-600 text-red-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setActiveTab('company')}
                     >
-                        Danh sách & Đơn giá Thiết bị
+                        Thông tin Công ty
                     </button>
                     <button
-                        className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'rules' ? 'border-red-600 text-red-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'equipments' ? 'border-red-600 text-red-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setActiveTab('equipments')}
+                    >
+                        Danh sách & Báo giá
+                    </button>
+                    <button
+                        className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'rules' ? 'border-red-600 text-red-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                         onClick={() => setActiveTab('rules')}
                     >
-                        Thông số Tính toán (TCVN)
+                        Thông số (TCVN)
                     </button>
                 </div>
 
                 {/* Content */}
                 <div className="p-0 overflow-y-auto flex-1 bg-slate-50/50">
-                    {activeTab === 'equipments' ? (
+                    {activeTab === 'company' ? (
+                        <div className="p-6 space-y-6">
+                            <div>
+                                <h3 className="font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">Thông tin hiển thị</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Tên Công ty / Thương hiệu</label>
+                                        <input type="text" value={draft.companyInfo?.name || ''} onChange={e => handleCompanyInfoChange('name', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none" placeholder="VD: PCCC Toàn Cầu" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 mb-1">Logo URL (Đường dẫn ảnh logo)</label>
+                                        <input type="text" value={draft.companyInfo?.logoUrl || ''} onChange={e => handleCompanyInfoChange('logoUrl', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none" placeholder="VD: /favicon.svg hoặc https://..." />
+                                        {draft.companyInfo?.logoUrl && <img src={draft.companyInfo.logoUrl} alt="Logo Preview" className="h-10 mt-2 object-contain" />}
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Số điện thoại liên hệ</label>
+                                            <input type="text" value={draft.companyInfo?.phone || ''} onChange={e => handleCompanyInfoChange('phone', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none" placeholder="VD: 09xx xxx xxx" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Địa chỉ</label>
+                                            <input type="text" value={draft.companyInfo?.address || ''} onChange={e => handleCompanyInfoChange('address', e.target.value)} className="w-full p-2 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none" placeholder="VD: Số 123, Đường ABC, Hà Nội" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : activeTab === 'equipments' ? (
                         <div className="p-6 space-y-4">
                             {draft.equipments.map((eq) => (
                                 <div key={eq.id} className="bg-white border border-slate-200 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start md:items-center relative group shadow-sm hover:border-red-200 transition-colors">
@@ -116,17 +163,14 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                                 value={eq.name}
                                                 onChange={e => handleEqFieldChange(eq.id, 'name', e.target.value)}
                                                 className="font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-300 focus:border-red-500 focus:outline-none w-full"
-                                                disabled={eq.isDefault}
                                             />
-                                            {!eq.isDefault && (
-                                                <input
-                                                    type="text"
-                                                    value={eq.icon}
-                                                    onChange={e => handleEqFieldChange(eq.id, 'icon', e.target.value)}
-                                                    className="w-8 text-center bg-transparent border-b border-dashed border-slate-300 focus:border-red-500 focus:outline-none"
-                                                    title="Icon (Emoji)"
-                                                />
-                                            )}
+                                            <input
+                                                type="text"
+                                                value={eq.icon}
+                                                onChange={e => handleEqFieldChange(eq.id, 'icon', e.target.value)}
+                                                className="w-8 text-center bg-transparent border-b border-dashed border-slate-300 focus:border-red-500 focus:outline-none"
+                                                title="Icon (Emoji)"
+                                            />
                                         </div>
                                         <div className="flex flex-col sm:flex-row gap-3">
                                             <div className="relative w-full sm:w-1/2">
@@ -144,7 +188,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                                     className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm focus:border-red-500 focus:outline-none"
                                                     value={eq.calcMethod.type}
                                                     onChange={e => handleMethodChange(eq.id, e.target.value as CalcMethodType)}
-                                                    disabled={eq.isDefault}
                                                 >
                                                     <option value="per_room">Mỗi phòng ngủ / khách</option>
                                                     <option value="per_kitchen_altar">Mỗi phòng bếp / thờ</option>
@@ -157,15 +200,13 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ config, onSave, onReset
                                             </div>
                                         </div>
                                     </div>
-                                    {!eq.isDefault && (
-                                        <button
-                                            onClick={() => handleRemoveEq(eq.id)}
-                                            className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors p-1"
-                                            title="Xóa thiết bị"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => handleRemoveEq(eq.id)}
+                                        className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors p-1"
+                                        title="Xóa thiết bị"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                             ))}
                             <button

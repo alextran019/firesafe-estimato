@@ -62,7 +62,15 @@ export interface WarehouseRules {
   heatCableRatioChemical: number;
 }
 
+export interface CompanyInfo {
+  name: string;
+  logoUrl: string;
+  phone: string;
+  address: string;
+}
+
 export interface FireSafetyConfig {
+  companyInfo?: CompanyInfo;
   equipments: Equipment[];
   rules: {
     residential: ResidentialRules;

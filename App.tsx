@@ -130,10 +130,16 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg">
-              <ShieldAlert className="text-red-600 w-7 h-7" />
+              {config.companyInfo?.logoUrl ? (
+                <img src={config.companyInfo.logoUrl} alt="Logo" className="w-7 h-7 object-contain" />
+              ) : (
+                <ShieldAlert className="text-red-600 w-7 h-7" />
+              )}
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight">FireSafe Pro</h1>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+                {config.companyInfo?.name || 'FireSafe Pro'}
+              </h1>
               <p className="text-red-100 text-xs">
                 Chuyên gia ước tính PCCC &nbsp;·&nbsp;
                 <span className="italic opacity-80">{backendStatus}</span>
@@ -150,7 +156,7 @@ const App: React.FC = () => {
             </button>
             <div className="hidden md:block text-right">
               <p className="text-xs uppercase opacity-75">Hỗ trợ 24/7</p>
-              <p className="font-semibold">1900 xxxx</p>
+              <p className="font-semibold">{config.companyInfo?.phone || '1900 xxxx'}</p>
             </div>
           </div>
         </div>
