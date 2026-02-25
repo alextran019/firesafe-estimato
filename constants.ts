@@ -37,15 +37,6 @@ export const DEFAULT_CONFIG: FireSafetyConfig = {
       icon: '🧠',
       isDefault: true,
       calcMethod: { type: 'per_building' }
-    },
-    {
-      id: 'bell',
-      name: 'Chuông báo cháy',
-      price: 320000,
-      description: 'Chuông âm thanh lớn dùng cho hành lang.',
-      icon: '🔊',
-      isDefault: true,
-      calcMethod: { type: 'per_floor_bell' }
     }
   ],
   rules: {

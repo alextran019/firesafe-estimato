@@ -134,43 +134,6 @@ const App: React.FC = () => {
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
-      {/* Header */}
-      <header className="bg-red-600 text-white p-4 md:p-6 shadow-lg sticky top-0 z-40">
-        <div className="w-full mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-white p-2 rounded-lg">
-              <ShieldAlert className="text-red-600 w-7 h-7" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight">
-                FIREAI
-              </h1>
-              <p className="text-red-100 text-xs">
-                Fire Safety Assistant &nbsp;·&nbsp;
-                <span className="italic opacity-80">{backendStatus}</span>
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowSystemSettings(true)}
-              className="flex items-center gap-2 bg-red-700 hover:bg-red-800 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="hidden md:inline">Cài đặt Hệ thống</span>
-            </button>
-            <div className="hidden md:block text-right border-l border-red-500 pl-4 ml-2">
-              <p className="text-xs uppercase opacity-75">Hỗ trợ 24/7</p>
-              <p className="font-semibold">0385.908.114</p>
-            </div>
-            {isAuthenticated ? (
-              <button onClick={() => setIsAuthenticated(false)} className="ml-2 px-3 py-2 bg-slate-800 hover:bg-slate-900 rounded-lg text-sm font-medium transition-colors">Đăng xuất</button>
-            ) : (
-              <button onClick={() => setShowAuthModal(true)} className="ml-2 px-3 py-2 bg-white text-red-600 hover:bg-slate-100 rounded-lg text-sm font-bold transition-colors shadow-sm">Đăng nhập</button>
-            )}
-          </div>
-        </div>
-      </header>
 
       <main className="flex-1 w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -398,9 +361,14 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-8">
         <div className="w-full mx-auto px-4 text-center">
-          <p className="text-slate-500 text-sm">© 2025 FireSafe Pro — Giải pháp an toàn cháy nổ thông minh</p>
+          <p className="text-slate-500 text-sm flex items-center justify-center gap-2">
+            © 2026 FireAI — Giải pháp báo cháy thông minh
+            <button onClick={() => isAuthenticated ? setShowSystemSettings(true) : setShowAuthModal(true)} className="text-slate-300 hover:text-red-500 transition-colors" title="Quản trị hệ thống">
+              <Settings className="w-3 h-3" />
+            </button>
+          </p>
           <p className="text-slate-400 text-xs mt-1 italic">
-            Kết quả chỉ mang tính chất tham khảo. Vui lòng liên hệ kỹ thuật để có bản vẽ chi tiết.
+            Kết quả chỉ mang tính chất tham khảo. Vui lòng liên hệ kỹ thuật để có bản thảo và bản vẽ chi tiết.
           </p>
         </div>
       </footer>
