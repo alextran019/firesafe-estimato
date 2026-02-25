@@ -10,9 +10,31 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: transparent; /* Changed from #f8fafc to support iframe embeds */
         }
     </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              red: {
+                50: '#fef2f2',
+                100: '#fee2e2',
+                200: '#fecaca',
+                300: '#fca5a5',
+                400: '#f87171',
+                500: '#e14d43', // Lighter brand coral
+                600: '#cf2031', // Main FireAI Brand Crimson
+                700: '#b20000', // Darker brand red
+                800: '#991b1b',
+                900: '#7f1d1d',
+              }
+            }
+          }
+        }
+      }
+    </script>
 <script type="importmap">
 {
   "imports": {

@@ -132,9 +132,8 @@ const App: React.FC = () => {
   // ─── Render Authentication ──────────────────────────────────────────────────
 
   // ─── Render ──────────────────────────────────────────────────────────────
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-transparent">
       {/* Header */}
       <header className="bg-red-600 text-white p-4 md:p-6 shadow-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
