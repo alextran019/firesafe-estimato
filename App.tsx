@@ -136,7 +136,7 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-transparent">
       {/* Header */}
       <header className="bg-red-600 text-white p-4 md:p-6 shadow-lg sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg">
               <ShieldAlert className="text-red-600 w-7 h-7" />
@@ -172,7 +172,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="flex-1 w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
         <div className="lg:col-span-4 space-y-5">
@@ -397,7 +397,7 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="w-full mx-auto px-4 text-center">
           <p className="text-slate-500 text-sm">© 2025 FireSafe Pro — Giải pháp an toàn cháy nổ thông minh</p>
           <p className="text-slate-400 text-xs mt-1 italic">
             Kết quả chỉ mang tính chất tham khảo. Vui lòng liên hệ kỹ thuật để có bản vẽ chi tiết.
