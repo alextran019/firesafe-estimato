@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build:ui" # Only need the React UI since the backend runs on serverless functions
+  publish = "dist"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

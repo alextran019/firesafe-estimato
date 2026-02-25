@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 // Import interface và type từ một file dung chung nếu cần, nhưng hiện tại định nghĩa lại ở đây cho server chạy độc lập.
 import { FireSafetyConfig, Equipment, CalcMethodType } from "./types.js";
 
-interface EstimateInput {
+export interface EstimateInput {
   buildingType?: "residential" | "office" | "warehouse";
   packageType?: "independent" | "local" | "smart";
   totalArea: number;
@@ -31,7 +31,7 @@ interface EquipmentItem {
   icon: string;
 }
 
-interface EstimateResult {
+export interface EstimateResult {
   totalCost: number;
   equipmentList: EquipmentItem[];
 }
@@ -41,7 +41,7 @@ import { DEFAULT_CONFIG } from './constants.js';
 /**
  * Hàm tính toán chi phí lắp đặt PCCC dự kiến DYNAMIC (Hỗ trợ cấu hình tuỳ chỉnh)
  */
-function calculateEstimate(
+export function calculateEstimate(
   input: EstimateInput,
   config: FireSafetyConfig = DEFAULT_CONFIG
 ): EstimateResult {
